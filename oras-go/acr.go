@@ -85,7 +85,7 @@ func uploadImage() {
 	os: "windows",
 	rootfs: {
 		type: "layers",
-		diff_ids: [%s]
+		diff_ids: [%s],
 	},
 }`, layerDescriptor.Digest))
 	configDescriptor := content.NewDescriptorFromBytes(v1.MediaTypeImageConfig, config)
