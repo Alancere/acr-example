@@ -74,7 +74,6 @@ func uploadImage() {
 	// layer
 	layer := []byte("hello oras")
 	layerDescriptor := content.NewDescriptorFromBytes(v1.MediaTypeImageLayer, layer)
-
 	err := store.Push(ctx, layerDescriptor, bytes.NewReader(layer))
 	if err != nil {
 		log.Fatal("layer push err:", err)
@@ -92,7 +91,6 @@ func uploadImage() {
 	configDescriptor := content.NewDescriptorFromBytes(v1.MediaTypeImageConfig, config)
 	//configDescriptor.Platform.Architecture = "amd64"
 	//configDescriptor.Platform.OS = "windows"
-
 	err = store.Push(ctx, configDescriptor, bytes.NewReader(config))
 	if err != nil {
 		log.Fatal("config push err:", err)
@@ -123,11 +121,12 @@ func uploadImage() {
 
 func pullImage() {
 
-	def, read, err := oras.Fetch(context.Background(), remoteRepository, tag, oras.DefaultFetchOptions)
+	manifestDescriptor, read, err := oras.Fetch(context.Background(), remoteRepository, tag, oras.DefaultFetchOptions)
 	if err != nil {
 		log.Fatal("oras fetch error:", err)
 	}
-	manifest, err := content.ReadAll(read, def)
+
+	manifest, err := content.ReadAll(read, manifestDescriptor)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -139,11 +138,11 @@ func pullImage() {
 		log.Fatal("unmarshal error:", err)
 	}
 
-	cc, err := content.FetchAll(context.Background(), remoteRepository, m.Config)
+	config, err := content.FetchAll(context.Background(), remoteRepository, m.Config)
 	if err != nil {
 		log.Fatal("config fetch error:", err)
 	}
-	fmt.Println("config:", string(cc))
+	fmt.Println("config:", string(config))
 
 	fmt.Println("layers:")
 	for _, l := range m.Layers {

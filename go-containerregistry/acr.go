@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/google/go-containerregistry/pkg/crane"
@@ -91,32 +92,37 @@ func pullImage() {
 		log.Fatal("pull image error:", err)
 	}
 
+	// manifest
 	manifest, err := img.RawManifest()
 	if err != nil {
 		log.Fatal("raw manifest error:", err)
 	}
 	fmt.Println("manifest:", string(manifest))
 
+	// config
 	conf, err := img.RawConfigFile()
 	if err != nil {
 		log.Fatal("config file error:", err)
 	}
 	fmt.Println("config:", string(conf))
 
+	// layers
 	layers, err := img.Layers()
 	if err != nil {
 		log.Fatal("get layers error", err)
 	}
 	fmt.Println("layers:")
 	for _, l := range layers {
-		s, _ := l.Size()
-		d := make([]byte, s)
-		unc, _ := l.Uncompressed()
-		_, err = unc.Read(d)
+		uncompressed, err := l.Uncompressed()
 		if err != nil {
 			log.Fatal("uncompressed error:", err)
 		}
-		fmt.Println("\t", string(d))
+
+		layer, err := io.ReadAll(uncompressed)
+		if err != nil {
+			log.Fatal("read layer error:", err)
+		}
+		fmt.Println("\t", string(layer))
 	}
 }
 
