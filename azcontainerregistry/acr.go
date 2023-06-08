@@ -43,13 +43,11 @@ func main() {
 
 	uploadImage()
 
-	setArtifactProperties()
-
 	downloadImage()
 
 	listRepositories()
 
-	listTagsWithAnonymousAccess()
+	listTags()
 
 	deleteImage()
 }
@@ -220,44 +218,15 @@ func downloadImage() {
 func deleteImage() {
 	ctx := context.Background()
 
-	manifestPager := acrClient.NewListManifestsPager(repositoriesName, &azcontainerregistry.ClientListManifestsOptions{
-		OrderBy: to.Ptr(azcontainerregistry.ArtifactManifestOrderByLastUpdatedOnDescending),
-	})
-	for manifestPager.More() {
-		manifestPage, err := manifestPager.NextPage(ctx)
-		if err != nil {
-			log.Fatalf("failed to advance manifest page: %v", err)
-		}
-		imagesToKeep := 3
-		for i, m := range manifestPage.Manifests.Attributes {
-			if i >= imagesToKeep {
-				for _, t := range m.Tags {
-					fmt.Printf("delete tag from image: %s", *t)
-					_, err := acrClient.DeleteTag(ctx, repositoriesName, *t, nil)
-					if err != nil {
-						log.Fatalf("failed to delete tag: %v", err)
-					}
-				}
-				_, err := acrClient.DeleteManifest(ctx, repositoriesName, *m.Digest, nil)
-				if err != nil {
-					log.Fatalf("failed to delete manifest: %v", err)
-				}
-				fmt.Printf("delete image with digest: %s", *m.Digest)
-			}
-		}
-	}
-}
+	manifest, err := acrClient.GetManifest(ctx, repositoriesName, "latest", nil)
 
-func setArtifactProperties() {
-	res, err := acrClient.UpdateTagProperties(context.Background(), repositoriesName, "1.0.0", &azcontainerregistry.ClientUpdateTagPropertiesOptions{
-		Value: &azcontainerregistry.TagWriteableProperties{
-			CanWrite:  to.Ptr(true),
-			CanDelete: to.Ptr(true),
-		}})
 	if err != nil {
-		log.Fatalf("failed to finish the request: %v", err)
+		log.Fatalf("failed to get manifest: %v", err)
 	}
-	fmt.Printf("repository library/myacr - tag latest: 'CanWrite' property: %t, 'CanDelete' property: %t\n", *res.Tag.ChangeableAttributes.CanWrite, *res.Tag.ChangeableAttributes.CanDelete)
+	_, err = acrClient.DeleteManifest(ctx, repositoriesName, *manifest.DockerContentDigest, nil)
+	if err != nil {
+		log.Fatalf("failed to delete manifest: %v", err)
+	}
 }
 
 func listRepositories() {
@@ -274,7 +243,7 @@ func listRepositories() {
 	}
 }
 
-func listTagsWithAnonymousAccess() {
+func listTags() {
 
 	pager := acrClient.NewListTagsPager("library/hello-world", nil)
 	for pager.More() {

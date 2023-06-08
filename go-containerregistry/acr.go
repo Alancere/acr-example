@@ -36,9 +36,9 @@ func init() {
 func main() {
 	fmt.Println("Hello go-containerregistry")
 
-	pushImage()
+	uploadImage()
 
-	pullImage()
+	downloadImage()
 
 	listRepositories()
 
@@ -47,7 +47,7 @@ func main() {
 	deleteImage()
 }
 
-func pushImage() {
+func uploadImage() {
 
 	// layer
 	hello := []byte("hello go-containerregistry")
@@ -84,7 +84,7 @@ func pushImage() {
 	fmt.Println("pushed:", digeset)
 }
 
-func pullImage() {
+func downloadImage() {
 
 	img, err := crane.Pull(fmt.Sprintf("%s/%s:%s", registriesName, repositoriesName, tag))
 	if err != nil {

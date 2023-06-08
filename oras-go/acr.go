@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"oras.land/oras-go/v2"
 
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/content/memory"
 	"oras.land/oras-go/v2/registry"
@@ -58,7 +58,7 @@ func main() {
 
 	uploadImage()
 
-	pullImage()
+	downloadImage()
 
 	listRepositories()
 
@@ -117,7 +117,7 @@ func uploadImage() {
 	fmt.Println("digest of uploaded manifest:", descriptor.Digest)
 }
 
-func pullImage() {
+func downloadImage() {
 
 	manifestDescriptor, read, err := oras.Fetch(context.Background(), remoteRepository, tag, oras.DefaultFetchOptions)
 	if err != nil {

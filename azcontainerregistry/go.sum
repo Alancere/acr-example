@@ -2,8 +2,6 @@ github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.0 h1:8kDqDngH+DmVBiCtIjCFTGa7M
 github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.0/go.mod h1:bjGvMhVMb+EEm3VRNQawDMUyMMjo+S5ewNjflkep/0Q=
 github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0 h1:vcYCAze6p19qBW7MhZybIsqD8sMV8js0NyQM8JDnVtg=
 github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0/go.mod h1:OQeznEEkTZ9OrhHJoDD8ZDq51FHgXjqtP9z6bEwBq9U=
-github.com/Azure/azure-sdk-for-go/sdk/containers/azcontainerregistry v0.1.1 h1:gbX1iULk/+X0Tlq0f+pjCMOAUJt/++vY6DU+wSMMDO8=
-github.com/Azure/azure-sdk-for-go/sdk/containers/azcontainerregistry v0.1.1/go.mod h1:3Tv8bopgVpBCg/r4xrxDgld5WHN1zNRC1YX7Fl0B868=
 github.com/Azure/azure-sdk-for-go/sdk/containers/azcontainerregistry v0.1.2-0.20230602053245-be636a8e83bb h1:oAtxTwRWMI9hX7VjguFhProTc/EeJ9O12vM801pf2PE=
 github.com/Azure/azure-sdk-for-go/sdk/containers/azcontainerregistry v0.1.2-0.20230602053245-be636a8e83bb/go.mod h1:rL09sLEGjIG0TgfQZNMvJ9FtfAseOtBPbGD5eZQMCqw=
 github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 h1:sXr+ck84g/ZlZUOZiNELInmMgOsuGwdjjVkEIde0OtY=
