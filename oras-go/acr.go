@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/opencontainers/image-spec/specs-go"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
@@ -68,30 +67,6 @@ func main() {
 	deleteImage()
 }
 
-func pullImage() {
-	store := memory.New()
-	ctx := context.Background()
-
-	manifestDescriptor, err := oras.Copy(ctx, remoteRepository, tag, store, tag, oras.DefaultCopyOptions)
-	if err != nil {
-		log.Fatal("copy err:", err)
-	}
-	fmt.Println("manifest pulled:", manifestDescriptor.Digest, manifestDescriptor.MediaType)
-
-	f, err := store.Fetch(ctx, manifestDescriptor)
-	if err != nil {
-		log.Fatal("fetch err:", err)
-	}
-
-	data := make([]byte, manifestDescriptor.Size)
-	_, err = f.Read(data)
-	if err != nil {
-		log.Fatal("read err:", err)
-	}
-
-	fmt.Printf("manifest content:\n%s", data)
-}
-
 func uploadImage() {
 	ctx := context.Background()
 	store := memory.New()
@@ -107,14 +82,16 @@ func uploadImage() {
 
 	// config
 	config := []byte(fmt.Sprintf(`{
-        architecture: "amd64",
-        os: "windows",
-        rootfs: {
-            type: "layers",
-            diff_ids: [%s],
-        },
-    }`, layerDescriptor.Digest))
+	architecture: "amd64",
+	os: "windows",
+	rootfs: {
+		type: "layers",
+		diff_ids: [%s],
+	},
+}`, layerDescriptor.Digest))
 	configDescriptor := content.NewDescriptorFromBytes(v1.MediaTypeImageConfig, config)
+	//configDescriptor.Platform.Architecture = "amd64"
+	//configDescriptor.Platform.OS = "windows"
 
 	err = store.Push(ctx, configDescriptor, bytes.NewReader(config))
 	if err != nil {
@@ -122,23 +99,14 @@ func uploadImage() {
 	}
 
 	// manifest
-	ManifestContent := v1.Manifest{
-		Layers:    []v1.Descriptor{layerDescriptor},
-		Config:    configDescriptor,
-		Versioned: specs.Versioned{SchemaVersion: 2},
-	}
-
-	manifest, err := json.Marshal(ManifestContent)
+	manifestDescriptor, err := oras.Pack(ctx, store, v1.MediaTypeImageManifest, []v1.Descriptor{layerDescriptor}, oras.PackOptions{
+		ConfigDescriptor:  &configDescriptor,
+		PackImageManifest: true,
+	})
 	if err != nil {
 		log.Fatal("manifest marshal err:", err)
 	}
-
-	manifestDescriptor := content.NewDescriptorFromBytes(v1.MediaTypeImageManifest, manifest)
-
-	err = store.Push(ctx, manifestDescriptor, bytes.NewReader(manifest))
-	if err != nil {
-		log.Fatal("manifest push err:", err)
-	}
+	fmt.Println("manifest:", manifestDescriptor)
 
 	err = store.Tag(ctx, manifestDescriptor, tag)
 	if err != nil {
@@ -151,6 +119,40 @@ func uploadImage() {
 		log.Fatal("upload image err:", err)
 	}
 	fmt.Println("digest of uploaded manifest:", descriptor.Digest)
+}
+
+func pullImage() {
+
+	def, read, err := oras.Fetch(context.Background(), remoteRepository, tag, oras.DefaultFetchOptions)
+	if err != nil {
+		log.Fatal("oras fetch error:", err)
+	}
+	manifest, err := content.ReadAll(read, def)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("manifest:", string(manifest))
+
+	m := v1.Manifest{}
+	err = json.Unmarshal(manifest, &m)
+	if err != nil {
+		log.Fatal("unmarshal error:", err)
+	}
+
+	cc, err := content.FetchAll(context.Background(), remoteRepository, m.Config)
+	if err != nil {
+		log.Fatal("config fetch error:", err)
+	}
+	fmt.Println("config:", string(cc))
+
+	fmt.Println("layers:")
+	for _, l := range m.Layers {
+		layer, err := content.FetchAll(context.Background(), remoteRepository, l)
+		if err != nil {
+			log.Fatal("layer fetch error:", err)
+		}
+		fmt.Println("\t", string(layer))
+	}
 }
 
 func deleteImage() {
@@ -166,6 +168,7 @@ func deleteImage() {
 	if err != nil {
 		log.Fatal("delete repository err manifest:", err)
 	}
+	fmt.Println("deleted:", ref)
 }
 
 func listReporitories() {

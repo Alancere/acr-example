@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/google/go-containerregistry/pkg/crane"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
-	"log"
 
 	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -62,29 +63,13 @@ func pushImage() {
 	}
 
 	// config
-	c := []byte(fmt.Sprintf(`{
-        architecture: "amd64",
-        os: "windows",
-        rootfs: {
-            type: "layers",
-            diff_ids: [%s],
-        },
-    }`, diffId))
-	config := static.NewLayer(c, types.OCIConfigJSON)
-
-	compressedConfig, err := config.Compressed()
-	if err != nil {
-		log.Fatal("compressed layer error:", err)
-	}
-	size, _ := config.Size()
-	cData := make([]byte, size)
-	_, err = compressedConfig.Read(cData)
-	if err != nil {
-		log.Fatal("read compress data error:", err)
-	}
-
-	img, err = mutate.Config(img, v1.Config{
-		Image: string(cData),
+	img, err = mutate.ConfigFile(img, &v1.ConfigFile{
+		Architecture: "amd64",
+		OS:           "windows",
+		RootFS: v1.RootFS{
+			Type:    "layers",
+			DiffIDs: []v1.Hash{diffId},
+		},
 	})
 	if err != nil {
 		log.Fatal("config error:", err)
@@ -101,22 +86,38 @@ func pushImage() {
 
 func pullImage() {
 
-	img, err := crane.Pull(acrPath)
+	img, err := crane.Pull(fmt.Sprintf("%s/%s:%s", registriesName, repositoriesName, tag))
 	if err != nil {
 		log.Fatal("pull image error:", err)
 	}
-
-	digest, err := img.Digest()
-	if err != nil {
-		log.Fatal("get digest error:", err)
-	}
-	fmt.Println("digest:", digest)
 
 	manifest, err := img.RawManifest()
 	if err != nil {
 		log.Fatal("raw manifest error:", err)
 	}
 	fmt.Println("manifest:", string(manifest))
+
+	conf, err := img.RawConfigFile()
+	if err != nil {
+		log.Fatal("config file error:", err)
+	}
+	fmt.Println("config:", string(conf))
+
+	layers, err := img.Layers()
+	if err != nil {
+		log.Fatal("get layers error", err)
+	}
+	fmt.Println("layers:")
+	for _, l := range layers {
+		s, _ := l.Size()
+		d := make([]byte, s)
+		unc, _ := l.Uncompressed()
+		_, err = unc.Read(d)
+		if err != nil {
+			log.Fatal("uncompressed error:", err)
+		}
+		fmt.Println("\t", string(d))
+	}
 }
 
 func listRepositories() {
