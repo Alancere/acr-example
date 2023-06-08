@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0
-	github.com/Azure/azure-sdk-for-go/sdk/containers/azcontainerregistry v0.1.2-0.20230602053245-be636a8e83bb
+	github.com/Azure/azure-sdk-for-go/sdk/containers/azcontainerregistry v0.2.0
 )
 
 require (
