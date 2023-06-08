@@ -22,7 +22,7 @@ const (
 	repositoriesName = "myoras"
 	tag              = "latest"
 	userName         = "azacrlivetest"
-	userPassword     = ""
+	userPassword     = "i3pAjGzyYSVMuAbjM5pWiXAcP6TfkYws16v+6Nr8lN+ACRAJmDV5"
 )
 
 var remoteRegistry *remote.Registry
@@ -72,7 +72,7 @@ func uploadImage() {
 	store := memory.New()
 
 	// layer
-	layer := []byte("hello oras")
+	layer := []byte("hello world")
 	layerDescriptor := content.NewDescriptorFromBytes(v1.MediaTypeImageLayer, layer)
 	err := store.Push(ctx, layerDescriptor, bytes.NewReader(layer))
 	if err != nil {

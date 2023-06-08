@@ -22,7 +22,8 @@ var acrClient *azcontainerregistry.Client
 
 var (
 	registriesName   = "https://azacrlivetest.azurecr.io"
-	repositoriesName = "library/myacr2"
+	repositoriesName = "myazcontainerregistry"
+	tag              = "latest"
 )
 
 func init() {
@@ -117,15 +118,12 @@ func uploadImage() {
 		  {
 			"mediaType": "application/vnd.oci.image.layer.v1.tar",
 			"digest": "%s",
-			"size": %d,
-			"annotations": {
-			  "title": "artifact.txt"
-			}
+			"size": %d
 		  }
 		]
-	  }`, layerDigest, len(config), *completeResp.DockerContentDigest, len(layer))
+	  }`, *completeResp.DockerContentDigest, len(config), layerDigest, len(layer))
 
-	uploadManifestRes, err := acrClient.UploadManifest(ctx, repositoriesName, "1.0.0", azcontainerregistry.ContentTypeApplicationVndDockerDistributionManifestV2JSON, streaming.NopCloser(bytes.NewReader([]byte(manifest))), nil)
+	uploadManifestRes, err := acrClient.UploadManifest(ctx, repositoriesName, tag, azcontainerregistry.ContentTypeApplicationVndDockerDistributionManifestV2JSON, streaming.NopCloser(bytes.NewReader([]byte(manifest))), nil)
 	if err != nil {
 		log.Fatalf("failed to upload manifest: %v", err)
 	}
@@ -142,7 +140,7 @@ func downloadImage() {
 	}
 
 	// Get manifest
-	manifestRest, err := acrClient.GetManifest(ctx, repositoriesName, "1.0.0", &azcontainerregistry.ClientGetManifestOptions{
+	manifestRest, err := acrClient.GetManifest(ctx, repositoriesName, tag, &azcontainerregistry.ClientGetManifestOptions{
 		Accept: to.Ptr(string(azcontainerregistry.ContentTypeApplicationVndDockerDistributionManifestV2JSON)),
 	})
 	if err != nil {
@@ -245,7 +243,7 @@ func listRepositories() {
 
 func listTags() {
 
-	pager := acrClient.NewListTagsPager("library/hello-world", nil)
+	pager := acrClient.NewListTagsPager(repositoriesName, nil)
 	for pager.More() {
 		page, err := pager.NextPage(context.Background())
 		if err != nil {

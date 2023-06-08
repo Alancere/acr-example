@@ -50,7 +50,7 @@ func main() {
 func uploadImage() {
 
 	// layer
-	hello := []byte("hello go-containerregistry")
+	hello := []byte("hello world")
 	layer := static.NewLayer(hello, types.OCIUncompressedLayer)
 	diffId, err := layer.DiffID()
 	if err != nil {
@@ -63,6 +63,7 @@ func uploadImage() {
 	}
 
 	// config
+	img = mutate.ConfigMediaType(img, types.OCIConfigJSON)
 	img, err = mutate.ConfigFile(img, &v1.ConfigFile{
 		Architecture: "amd64",
 		OS:           "windows",
@@ -135,7 +136,7 @@ func listRepositories() {
 
 func listTags() {
 
-	tags, err := crane.ListTags(fmt.Sprintf("%s/%s", registriesName, "hello-world"))
+	tags, err := crane.ListTags(fmt.Sprintf("%s/%s", registriesName, repositoriesName))
 	if err != nil {
 		log.Fatal("list tags error:", err)
 	}
