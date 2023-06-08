@@ -5,12 +5,11 @@ import (
 	"io"
 	"log"
 
+	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
+	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
-
-	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
-	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/types"

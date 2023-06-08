@@ -47,7 +47,7 @@ func main() {
 
 	downloadImage()
 
-	listReporitories()
+	listRepositories()
 
 	listTagsWithAnonymousAccess()
 
@@ -260,7 +260,7 @@ func setArtifactProperties() {
 	fmt.Printf("repository library/myacr - tag latest: 'CanWrite' property: %t, 'CanDelete' property: %t\n", *res.Tag.ChangeableAttributes.CanWrite, *res.Tag.ChangeableAttributes.CanDelete)
 }
 
-func listReporitories() {
+func listRepositories() {
 
 	pager := acrClient.NewListRepositoriesPager(nil)
 	for pager.More() {

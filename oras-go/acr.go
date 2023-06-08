@@ -60,7 +60,7 @@ func main() {
 
 	pullImage()
 
-	listReporitories()
+	listRepositories()
 
 	listTags()
 
@@ -89,8 +89,6 @@ func uploadImage() {
 	},
 }`, layerDescriptor.Digest))
 	configDescriptor := content.NewDescriptorFromBytes(v1.MediaTypeImageConfig, config)
-	//configDescriptor.Platform.Architecture = "amd64"
-	//configDescriptor.Platform.OS = "windows"
 	err = store.Push(ctx, configDescriptor, bytes.NewReader(config))
 	if err != nil {
 		log.Fatal("config push err:", err)
@@ -158,7 +156,7 @@ func deleteImage() {
 
 	manifest := remoteRepository.Manifests()
 	ref := fmt.Sprintf("%s/%s:%s", registriesName, repositoriesName, tag)
-	manifestDescriptor, err := manifest.Resolve(context.Background(), ref)
+	manifestDescriptor, err := manifest.Resolve(context.Background(), tag)
 	if err != nil {
 		log.Fatal("resolve reference:", err)
 	}
@@ -170,7 +168,7 @@ func deleteImage() {
 	fmt.Println("deleted:", ref)
 }
 
-func listReporitories() {
+func listRepositories() {
 
 	repos, err := registry.Repositories(context.Background(), remoteRegistry)
 	if err != nil {
