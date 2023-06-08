@@ -87,7 +87,7 @@ func uploadImage() {
 	os: "windows",
 	rootfs: {
 		type: "layers",
-		diff_ids: [%s],
+		diff_ids: [%s]
 	},
 }`, layerDigest))
 	startRes, err = blobClient.StartUpload(ctx, repositoriesName, nil)
